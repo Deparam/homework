@@ -1,0 +1,151 @@
+
+# Dependencies and Setup
+import pandas as pd
+
+# File to Load (Remember to Change These)
+file_to_load = "purchase_data.csv"
+
+# Read Purchasing File and store into Pandas data frame
+purchase_data = pd.read_csv(file_to_load)
+
+
+purchase_data.head()
+
+
+Player_Count = len(purchase_data["Purchase ID"].unique())
+Player_Count
+
+Unique_Items = len(purchase_data["Item Name"].unique())
+Average_price = purchase_data["Price"].mean()
+NumberPurchases = len(purchase_data["Item Name"])
+TotalRevenue = NumberPurchases * Average_price
+
+Summary_data = pd.DataFrame({"Number of Unique Items" : [Unique_Items], "Average Price" : [Average_price],"Number of Purchases": [NumberPurchases],"Total Revenue" : [TotalRevenue] })
+
+# Data Munging
+Summary_data["Average Price"] = Summary_data["Average Price"].map("${:,.2f}".format)
+
+# Display
+Summary_data
+
+TotalPlayer = len(purchase_data["SN"])
+gender_count = purchase_data["Gender"].value_counts()
+percentage_gender = gender_count/TotalPlayer * 100
+
+# Make a dataframe of gender count
+df_gender = pd.DataFrame(gender_count)
+
+# Add percentage_gender
+df_gender["percentage_gender"] = percentage_gender
+
+Summary_Gender = df_gender.rename(columns={"Gender":"Total Count", "percentage_gender":"Percentage of Players"})
+
+# Data Munging
+Summary_Gender["Percentage of Players"] = Summary_Gender["Percentage of Players"].map("{:,.2f}%".format)
+
+# Display
+Summary_Gender
+
+#rename the Purchase Count and remove the percentage_gender
+new_df = df_gender.rename(columns={"Gender":"Purchase Count"})
+new_df = pd.DataFrame(new_df["Purchase Count"])
+
+#Cal Average Purchases Price and add to the new_df
+gender_average_price = purchase_data.groupby("Gender").mean()
+gender_average_price = gender_average_price["Price"]
+new_df["Average Purchase Price"] = gender_average_price
+
+#Cal Total Purchase Value and add to the new_df
+gender_total_purchase = purchase_data.groupby("Gender").sum()
+gender_total_purchase = gender_total_purchase["Price"]
+new_df["Total Purchase Value"] = gender_total_purchase
+
+# Cal Avg Total Purchase per Person and add to the new_df
+    
+# Data Munging
+new_df["Average Purchase Price"] = new_df["Average Purchase Price"].map("{:,.2f}".format)
+new_df["Total Purchase Value"] = new_df["Total Purchase Value"].map("{:,.2f}".format)
+   
+# Display Table
+new_df
+
+bins = [0, 9, 14, 19, 24, 29, 34, 39, 99]
+group_names = ['<10', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40+']
+
+# Calculate the numbers and percentages by age group
+age = pd.cut(purchase_data["Age"], bins, labels=group_names)
+age_group = pd.DataFrame(age.value_counts())
+percentage_players = age_group/Player_Count * 100
+
+
+#rename the columns
+age_group["Percentage of Players"] = percentage_players
+age_group = age_group.rename(columns={"Age":"Total Count"})
+
+#reindex the order
+newindex = ['<10', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40+']
+age_group = age_group.reindex(newindex)
+
+# Data Munging
+age_group["Percentage of Players"] = age_group["Percentage of Players"].map("{:,.2f}%".format)
+
+# Display Table
+age_group
+
+bins = [0, 9, 14, 19, 24, 29, 34, 39, 99]
+group_names = ['<10', '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40+']
+
+purchase_data["Age Group"] = pd.cut(purchase_data["Age"], bins, labels=group_names)
+
+age_purchase_count = purchase_data.groupby("Age Group").count()["Item ID"]
+age_average_price = purchase_data.groupby("Age Group").mean()['Price']
+age_totalpurchase = purchase_data.groupby("Age Group").sum()['Price']
+age_avepur_person = age_totalpurchase/age_purchase_count
+
+# create the dataframe
+age_df = pd.DataFrame({"Purchase Count": age_purchase_count, "Average Purchase Price": age_average_price,\
+                      "Total Purchase Value": age_totalpurchase, "Avg Total Purchase per Person": age_avepur_person})
+
+
+# Data Munging
+age_df["Average Purchase Price"] = age_df["Average Purchase Price"].map("{:,.2f}".format)
+age_df["Avg Total Purchase per Person"] = age_df["Avg Total Purchase per Person"].map("{:,.2f}".format)
+
+# Display Table
+age_df.head(10)
+
+# Perform calculations
+spender_count = purchase_data.groupby("SN").count()["Purchase ID"] 
+spender_average = purchase_data.groupby("SN").mean()['Price']
+spender_total = purchase_data.groupby("SN").sum()['Price']
+
+# create the dataframe
+spender_df = pd.DataFrame({"Purchase Count": spender_count, 
+                             "Average Purchase Price": spender_average,
+                             "Total Purchase Value": spender_total})
+# Data Munging
+spender_df["Average Purchase Price"] = spender_df["Average Purchase Price"].map("{:,.2f}".format)
+
+
+# Display Table
+spender_df = spender_df.sort_values("Purchase Count", ascending=False)
+spender_df.head()
+
+purchase_count = purchase_data.groupby(["Item ID", "Item Name"]).count()["Price"]
+item_price = purchase_data.groupby(["Item ID", "Item Name"]).mean()["Price"]
+total_pruchase_value = purchase_data.groupby(["Item ID", "Item Name"]).sum()["Price"]
+
+# create the dataframe
+pop_items_df = pd.DataFrame({"Purchase Count": purchase_count, \
+                            "Item Price": item_price,\
+                            "Total Purchase Value": total_pruchase_value})
+
+# Display Table
+pop_items_df = pop_items_df.sort_values("Purchase Count", ascending=False)
+pop_items_df.head()
+
+pop_items_df = pop_items_df.sort_values("Purchase Count", ascending=False)
+pop_items_df.head()
+pop_items_df = pop_items_df.sort_values("Purchase Count", ascending=False)
+pop_items_df.head()
+
